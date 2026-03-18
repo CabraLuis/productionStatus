@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Part" ALTER COLUMN "number" SET DATA TYPE TEXT;

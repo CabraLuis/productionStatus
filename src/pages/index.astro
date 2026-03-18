@@ -1,0 +1,21 @@
+---
+import Layout from "../layouts/Layout.astro";
+import LoginForm from "../components/LoginForm";
+
+if (Astro.cookies.has("auth")) {
+  const cookie = Astro.cookies.get("auth");
+  const value = cookie?.number();
+
+  if (value == 2 && !isNaN(value)) {
+    return Astro.redirect("prodSup");
+  } else if (value == 3 && !isNaN(value)) {
+    return Astro.redirect("/cmm/board");
+  } else if (value == 4 && !isNaN(value)) {
+    return Astro.redirect("/cleanLine/board");
+  }
+}
+---
+
+<Layout title="Login">
+  <LoginForm client:load />
+</Layout>

@@ -1,0 +1,169 @@
+---
+import { prisma } from "../../lib/prisma";
+import Layout from "../../layouts/Layout.astro";
+import type { Prisma } from "@prisma/client";
+import Navbar from "../../components/cleanLine/Navbar";
+
+type WorkOrderStatusRegistry = Prisma.WorkOrderStatusRegistryGetPayload<{
+  include: {
+    workOrder: {
+      include: {
+        deliveredBy: true;
+        part: true;
+        priority: true;
+        step: true;
+        deliveredTo: true;
+        operator: { include: { beeper: true } };
+        technician: true;
+        status: true;
+      };
+    };
+    status: true;
+  };
+}>;
+
+const data = await prisma.workOrderStatusRegistry.findMany({
+  include: {
+    workOrder: {
+      include: {
+        deliveredBy: true,
+        deliveredTo: true,
+        operator: { include: { beeper: true } },
+        part: true,
+        status: true,
+        technician: true,
+        step: true,
+      },
+    },
+    status: true,
+  },
+  orderBy: [{ workOrderId: "asc" }, { statusId: "asc" }],
+  where: {
+    workOrder: {
+      deliveredToId: 2,
+    },
+  },
+});
+---
+
+<script>
+  import { DataTable } from "simple-datatables";
+  import { exportCSV } from "simple-datatables";
+  const dataTable = new DataTable("#data", {
+    searchable: true,
+    perPage: 9,
+    sortable: true,
+
+    labels: {
+      placeholder: "Buscar 🔎",
+      noRows: "No se encontro informacion",
+      info: "Mostrando {start} a {end} de {rows} logs",
+      perPage: "logs por pagina",
+      noResults: "No se encontro informacion",
+    },
+    classes: {
+      bottom: "grid grid-cols-1 justify-items-center",
+      paginationList: "join",
+      paginationListItem: "join-item",
+      paginationListItemLink: "btn btn-ghost",
+      active: "btn-active",
+      search: "ml-4",
+      dropdown: "ml-4",
+    },
+  });
+
+  document.getElementById("export")?.addEventListener("click", () => {
+    exportCSV(dataTable, {
+      download: true,
+      lineDelimiter: "\r\n",
+      filename: "cleanLineLog",
+    });
+  });
+</script>
+
+<Layout title="Clean Line Registry">
+  <Navbar client:load />
+  <div class="bg-base-200 grow">
+    <div class="w-full flex justify-center">
+      <button class="btn btn-primary btn-sm mt-1" id="export"
+        >Descargar CSV</button
+      >
+    </div>
+    <div class="w-full overflow-x-scroll">
+      <div class="mt-3 w-full flex justify-center">
+        <span class="text-red-500">*</span>
+        Sort by clicking on the titles
+      </div>
+
+      <table class="table bg-base-100" id="data">
+        <thead>
+          <tr>
+            <th>Log ID</th>
+            <th>No. Parte</th>
+            <th>No. WO</th>
+            <th>Cantidad</th>
+            <th>Step</th>
+            <th>Técnico CMM</th>
+            <th>Tiempo Estimado</th>
+            <th>Departamento</th>
+            <th>Beeper</th>
+            <th>Inicio</th>
+            <th>Duración Real</th>
+            <th>Prioridad</th>
+            <th>Estado</th>
+            <th>Liberado</th>
+            <th>Retardo</th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            data.map((workOrder: WorkOrderStatusRegistry) => (
+              <tr id={`${workOrder.id}`}>
+                <td>{workOrder.id}</td>
+                <td>{workOrder.workOrder.part.number}</td>
+                <td>{workOrder.workOrder.workOrder.split("@").shift()}</td>
+                <td>{workOrder.workOrder.quantity} pz.</td>
+                <td>{workOrder.workOrder.step.step}</td>
+                <td>{workOrder.workOrder.technician?.name || null}</td>
+                <td>{workOrder.workOrder.estimatedTime} min.</td>
+                <td>{workOrder.workOrder.deliveredBy.name}</td>
+                <td>{workOrder.workOrder.operator.beeper?.number || null}</td>
+                <td>
+                  {
+                    new Date(new Date(workOrder.startedAt).toUTCString())
+                      .toISOString()
+                      .split("T")[0]
+                  }
+                  {
+                    new Date(new Date(workOrder.startedAt).toUTCString())
+                      .toISOString()
+                      .split("T")[1]
+                      .split(".")[0]
+                  }
+                </td>
+                <td>
+                  {workOrder.elapsedTime}
+                  min.
+                </td>
+                <td>{workOrder.workOrder.priority}</td>
+                <td>{workOrder.status.status}</td>
+                {workOrder.statusId == 3 ? (
+                  <td>{workOrder.rejected ? "Rechazado" : "Aceptado"}</td>
+                ) : (
+                  <td />
+                )}
+                <td>
+                  {workOrder.statusId === 2 &&
+                    workOrder.workOrder.timeDelayed != null &&
+                    workOrder.workOrder.timeDelayed > 0 && (
+                      <>{workOrder.workOrder.timeDelayed} min.</>
+                    )}
+                </td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</Layout>

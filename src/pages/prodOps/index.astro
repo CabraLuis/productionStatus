@@ -1,0 +1,17 @@
+---
+import Navbar from "../../components/prod/Navbar";
+import ProdOpsModule from "../../components/prod/ProdOpsModule";
+import Layout from "../../layouts/Layout.astro";
+
+let value;
+
+if (Astro.cookies.has("area")) {
+  const cookie = Astro.cookies.get("area");
+  value = cookie?.value;
+}
+---
+
+<Layout title="Nueva WorkOrder">
+  <Navbar client:load />
+  <ProdOpsModule deliveredBy={value} client:load />
+</Layout>

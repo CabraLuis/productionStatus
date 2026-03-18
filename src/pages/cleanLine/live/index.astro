@@ -1,0 +1,10 @@
+---
+import LiveView from "../../../components/cleanLine/LiveView";
+import Navbar from "../../../components/cleanLine/Navbar";
+import Layout from "../../../layouts/Layout.astro";
+---
+
+<Layout title="Clean Line Status">
+  <Navbar />
+  <LiveView client:load />
+</Layout>

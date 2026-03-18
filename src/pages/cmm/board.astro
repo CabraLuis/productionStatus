@@ -1,0 +1,21 @@
+---
+import CMMModule from "../../components/cmm/CMMModule";
+import Navbar from "../../components/cmm/Navbar";
+import Layout from "../../layouts/Layout.astro";
+
+if (!Astro.cookies.has("auth")) {
+  return Astro.redirect("/");
+} else {
+  const cookie = Astro.cookies.get("auth");
+  const value = cookie?.number();
+
+  if (value != 3) {
+    return Astro.redirect("/");
+  }
+}
+---
+
+<Layout title="CMM Dashboard">
+  <Navbar client:load />
+  <CMMModule client:load />
+</Layout>

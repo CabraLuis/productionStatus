@@ -1,0 +1,10 @@
+---
+import LiveView from "../../../components/cmm/LiveView";
+import Navbar from "../../../components/cmm/Navbar";
+import Layout from "../../../layouts/Layout.astro";
+---
+
+<Layout title="CMM Status">
+  <Navbar />
+  <LiveView client:load />
+</Layout>

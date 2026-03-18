@@ -1,0 +1,21 @@
+---
+import Navbar from "../../components/prod/Navbar";
+import ProdSupModule from "../../components/prod/ProdSupModule";
+import Layout from "../../layouts/Layout.astro";
+
+if (!Astro.cookies.has("auth")) {
+  return Astro.redirect("/");
+} else {
+  const cookie = Astro.cookies.get("auth");
+  const value = cookie?.number();
+
+  if (value != 2) {
+    return Astro.redirect("/");
+  }
+}
+---
+
+<Layout title="CMM Dashboard">
+  <Navbar client:load />
+  <ProdSupModule deliveredToId={1} client:load />
+</Layout>

@@ -1,0 +1,115 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model WorkOrder {
+  id            Int      @id @default(autoincrement())
+  workOrder     String   
+  partId        Int
+  quantity      Int
+  stepId        Int
+  deliveredToId Int
+  deliveredById Int
+  changedAt     DateTime
+  priority      Int
+  statusId      Int
+  estimatedTime Int
+  rejected      Boolean?
+  timeDelayed   Int?
+  technicianId  Int?
+  operatorId    Int
+
+  operator    Operator    @relation(fields: [operatorId], references: [id])
+  technician  Technician? @relation(fields: [technicianId], references: [id])
+  status      Status      @relation(fields: [statusId], references: [id])
+  deliveredBy Area        @relation("DeliveredBy", fields: [deliveredById], references: [id])
+  deliveredTo Area        @relation("DeliveredTo", fields: [deliveredToId], references: [id])
+  part        Part        @relation(fields: [partId], references: [id])
+  step        Step        @relation(fields: [stepId], references: [id])
+
+  partStatusRegistry WorkOrderStatusRegistry[]
+}
+
+model Technician {
+  id     Int    @id @default(autoincrement())
+  name   String
+  areaId Int
+
+  area      Area        @relation(fields: [areaId], references: [id])
+  WorkOrder WorkOrder[]
+}
+
+model Operator {
+  id       Int    @id @default(autoincrement())
+  name     String
+  areaId   Int
+  beeperId Int?
+
+  area       Area        @relation(fields: [areaId], references: [id])
+  beeper     Beeper?     @relation(fields: [beeperId], references: [id])
+  workOrders WorkOrder[]
+}
+
+model Beeper {
+  id     Int @id @default(autoincrement())
+  number Int @unique
+
+  operators Operator[]
+}
+
+model Status {
+  id     Int    @id @default(autoincrement())
+  status String @unique
+
+  workOrder          WorkOrder[]
+  partStatusRegistry WorkOrderStatusRegistry[]
+}
+
+model WorkOrderStatusRegistry {
+  id          Int      @id @default(autoincrement())
+  workOrderId Int
+  statusId    Int
+  startedAt   DateTime
+  rejected    Boolean
+  elapsedTime Int
+
+  status Status @relation(fields: [statusId], references: [id])
+
+  workOrder WorkOrder @relation(fields: [workOrderId], references: [id])
+}
+
+model Area {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+
+  operators   Operator[]
+  technicians Technician[]
+
+  deliveredBy WorkOrder[] @relation("DeliveredBy")
+  deliveredTo WorkOrder[] @relation("DeliveredTo")
+}
+
+model AuthorizedUser {
+  id       Int    @id @default(autoincrement())
+  email    String @unique
+  password String
+}
+
+model Part {
+  id     Int    @id @default(autoincrement())
+  number String @unique
+
+  workOrder WorkOrder[]
+}
+
+model Step {
+  id   Int @id @default(autoincrement())
+  step Int @unique
+
+  workOrder WorkOrder[]
+}

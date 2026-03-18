@@ -1,0 +1,21 @@
+---
+import CleanLineModule from "../../components/cleanLine/CleanLineModule";
+import Navbar from "../../components/cleanLine/Navbar";
+import Layout from "../../layouts/Layout.astro";
+
+if (!Astro.cookies.has("auth")) {
+  return Astro.redirect("/");
+} else {
+  const cookie = Astro.cookies.get("auth");
+  const value = cookie?.number();
+
+  if (value != 4) {
+    return Astro.redirect("/");
+  }
+}
+---
+
+<Layout title="Clean Line Dashboard">
+  <Navbar client:load />
+  <CleanLineModule client:load />
+</Layout>
