@@ -14,9 +14,6 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   if (!workOrder.part || !workOrder.quantity || !workOrder.step) {
     return new Response("Invalid data", { status: 400 });
   }
-  if (!workOrder.operatorId) {
-    return new Response("Operator required", { status: 400 });
-  }
 
   const newPart = await prisma.part.upsert({
     where: {
@@ -39,12 +36,18 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   });
 
   const deliveredToArea = await prisma.area.findUnique({
-    where: { name: workOrder.deliveredTo },
+    where: { id: Number(workOrder.deliveredTo) },
   });
   if (!deliveredToArea) {
     return new Response("Invalid destination area", { status: 400 });
   }
+
   cookies.set("area", `${workOrder.deliveredBy}`, {
+    path: "/",
+    maxAge: 34560000,
+  });
+
+  cookies.set("deliverTo", `${workOrder.deliveredTo}`, {
     path: "/",
     maxAge: 34560000,
   });
@@ -62,7 +65,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       statusId: 1,
       estimatedTime: 0,
       rejected: false,
-      operatorId: parseInt(workOrder.operatorId),
+      operatorId:
+        workOrder.operatorId === " " ? null : parseInt(workOrder.operatorId),
     },
   });
 

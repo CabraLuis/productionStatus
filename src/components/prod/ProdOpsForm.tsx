@@ -4,14 +4,16 @@ import { useEffect, useState } from "preact/hooks";
 interface ProdOpsFormProps {
   closeForm?: Function;
   deliveredBy?: string;
+  deliverTo?: string;
 }
 
 export default function ProdOpsForm({
   deliveredBy,
   closeForm,
+  deliverTo,
 }: ProdOpsFormProps) {
   const initialFields = () => ({
-    deliveredTo: "",
+    deliveredTo: deliverTo || "",
     part: "",
     workOrder: "",
     quantity: "",
@@ -64,7 +66,12 @@ export default function ProdOpsForm({
       step: step ?? prev.step,
     }));
   }
-
+  const availableAreas = areas.filter((area: any) => {
+    if (formData.deliveredTo === "2") {
+      return area.name === "KITTING" || area.name === "DETAIL";
+    }
+    return area.name !== "CMM" && area.name !== "CLEAN LINE";
+  });
   return (
     <form onSubmit={submit}>
       <div class="form-control">
@@ -77,14 +84,19 @@ export default function ProdOpsForm({
           required
           value={formData.deliveredTo}
           onChange={(e: any) =>
-            setFormData({ ...formData, deliveredTo: e.target.value })
+            setFormData({
+              ...formData,
+              deliveredTo: e.target.value,
+              deliveredBy: "",
+              operatorId: null,
+            })
           }
         >
           <option value="" disabled>
             Seleccione departamento
           </option>
-          <option value="CMM">CMM</option>
-          <option value="CLEAN LINE">CLEAN LINE</option>
+          <option value="1">CMM</option>
+          <option value="2">CLEAN LINE</option>
         </select>
       </div>
 
@@ -185,15 +197,11 @@ export default function ProdOpsForm({
           <option value="" disabled>
             Seleccione departamento
           </option>
-          {areas
-            .filter(
-              (area: any) => area.name !== "CMM" && area.name !== "CLEAN LINE",
-            )
-            .map((area: any) => (
-              <option key={area.id} value={area.id}>
-                {area.name}
-              </option>
-            ))}
+          {availableAreas.map((area: any) => (
+            <option key={area.id} value={area.id}>
+              {area.name}
+            </option>
+          ))}
         </select>
       </div>
 
@@ -202,7 +210,6 @@ export default function ProdOpsForm({
           <span className="label-text">Empleado</span>
         </label>
         <select
-          required
           autofocus
           class="select select-bordered"
           onChange={(e: any) =>
@@ -210,7 +217,7 @@ export default function ProdOpsForm({
           }
           value={formData.operatorId || ""}
         >
-          <option value="">Seleccione empleado</option>
+          <option value="">No Asignado</option>
           {operatorsInArea.map((op: any) => (
             <option key={op.id} value={op.id}>
               {op.name}

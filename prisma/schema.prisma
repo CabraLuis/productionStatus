@@ -9,7 +9,7 @@ datasource db {
 
 model WorkOrder {
   id            Int      @id @default(autoincrement())
-  workOrder     String   
+  workOrder     String
   partId        Int
   quantity      Int
   stepId        Int
@@ -22,9 +22,9 @@ model WorkOrder {
   rejected      Boolean?
   timeDelayed   Int?
   technicianId  Int?
-  operatorId    Int
+  operatorId    Int?
 
-  operator    Operator    @relation(fields: [operatorId], references: [id])
+  operator    Operator?   @relation(fields: [operatorId], references: [id])
   technician  Technician? @relation(fields: [technicianId], references: [id])
   status      Status      @relation(fields: [statusId], references: [id])
   deliveredBy Area        @relation("DeliveredBy", fields: [deliveredById], references: [id])
