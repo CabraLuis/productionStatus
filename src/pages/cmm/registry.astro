@@ -127,7 +127,13 @@ const data = await prisma.workOrderStatusRegistry.findMany({
                 <td>{workOrder.workOrder.technician?.name || null}</td>
                 <td>{workOrder.workOrder.estimatedTime} min.</td>
                 <td>{workOrder.workOrder.deliveredBy.name}</td>
-                <td>{workOrder.workOrder.operator.beeper?.number || null}</td>
+                <td>
+                  {workOrder.workOrder.operator
+                    ? workOrder.workOrder.operator.beeper
+                      ? workOrder.workOrder.operator.beeper.number
+                      : null
+                    : null}
+                </td>
                 <td>
                   {
                     new Date(new Date(workOrder.startedAt).toUTCString())

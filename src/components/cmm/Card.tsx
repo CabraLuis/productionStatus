@@ -59,7 +59,7 @@ export default function Card({
   const statusLabel =
     {
       1: "Recibido",
-      2: "Limpiando",
+      2: "Midiendo",
       3: "Finalizado",
     }[workOrder.status.id] || "";
 
