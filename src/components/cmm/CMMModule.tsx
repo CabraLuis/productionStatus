@@ -9,7 +9,6 @@ type TechnicianWithArea = Prisma.TechnicianGetPayload<{
   };
 }>;
 export default function CMMModule() {
-  const [data, setData] = useState<WorkOrder[]>([]);
   const [formData, setFormData] = useState({
     estimatedTime: "",
     technicianId: "",
@@ -18,11 +17,17 @@ export default function CMMModule() {
   const formModalRef = useRef<HTMLDialogElement>(null);
   const rejectModalRef = useRef<HTMLDialogElement>(null);
   const [technicians, setTechnicians] = useState<TechnicianWithArea[]>([]);
+  const [standby, setStandby] = useState<WorkOrder[]>([]);
+  const [measuring, setMeasuring] = useState<WorkOrder[]>([]);
+  const [done, setDone] = useState<WorkOrder[]>([]);
+
   useEffect(() => {
     async function getInfo() {
-      let response = await fetch("/api/CMM/main");
-      let data = await response.json();
-      setData(data);
+      const response = await fetch("/api/CMM/main");
+      const data = await response.json();
+      setStandby(data.standby);
+      setMeasuring(data.measuring);
+      setDone(data.done);
     }
     async function getTechnicians() {
       const res = await fetch("/api/info?deliveredTo=1");
@@ -41,7 +46,6 @@ export default function CMMModule() {
 
       eventSource.onerror = () => {
         eventSource.close();
-        // reintenta cada 5 segundos
         retryTimeout = setTimeout(connect, 5000);
       };
     }
@@ -54,7 +58,6 @@ export default function CMMModule() {
       eventSource.close();
       clearTimeout(retryTimeout);
     };
-    return () => eventSource.close();
   }, []);
 
   async function measure(e: React.FormEvent<HTMLFormElement>) {
@@ -201,42 +204,36 @@ export default function CMMModule() {
           </div>
         </dialog>
 
-        <div class="grid grid-cols-3 ">
+        <div class="grid grid-cols-3">
           <div class="flex flex-col">
             <div class="text-5xl font-bold text-center mb-4 px-5">Standby</div>
-            {data.map((workOrder: WorkOrder) =>
-              workOrder.statusId === 1 ? (
-                <Card
-                  workOrder={workOrder}
-                  onButtonClick={showForm}
-                  buttonText="Medir >"
-                ></Card>
-              ) : null,
-            )}
+            {standby.map((workOrder: WorkOrder) => (
+              <Card
+                workOrder={workOrder}
+                onButtonClick={showForm}
+                buttonText="Medir >"
+              />
+            ))}
           </div>
 
-          <div class="flex flex-col ">
+          <div class="flex flex-col">
             <div class="text-5xl font-bold text-center mb-4 px-5">Midiendo</div>
-            {data.map((workOrder: any) =>
-              workOrder.statusId === 2 ? (
-                <Card
-                  workOrder={workOrder}
-                  onButtonClick={showReject}
-                  buttonText="Liberar >"
-                ></Card>
-              ) : null,
-            )}
+            {measuring.map((workOrder: WorkOrder) => (
+              <Card
+                workOrder={workOrder}
+                onButtonClick={showReject}
+                buttonText="Liberar >"
+              />
+            ))}
           </div>
 
           <div class="flex flex-col">
             <div class="text-5xl font-bold text-center mb-4 px-5">
               Terminado
             </div>
-            {data.map((workOrder: any) =>
-              workOrder.statusId === 3 ? (
-                <Card workOrder={workOrder}></Card>
-              ) : null,
-            )}
+            {done.map((workOrder: WorkOrder) => (
+              <Card workOrder={workOrder} />
+            ))}
           </div>
         </div>
       </div>

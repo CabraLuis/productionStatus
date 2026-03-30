@@ -10,37 +10,51 @@ function fromDateToString(date: Date) {
 }
 
 export const GET: APIRoute = async () => {
-  const workOrders = await prisma.workOrder.findMany({
-    take: 18,
-    include: {
+  try {
+    const include = {
       part: true,
       status: true,
       step: true,
       partStatusRegistry: true,
       technician: {
-        include: {
-          area: true,
-        },
+        include: { area: true },
       },
       operator: {
-        include: {
-          beeper: true,
-        },
+        include: { beeper: true },
       },
       deliveredBy: true,
       deliveredTo: true,
-    },
-    orderBy: {
-      changedAt: "desc",
-    },
-    where: {
-      deliveredToId: 1,
-    },
-  });
-  return new Response(JSON.stringify(workOrders), {
-    status: 200,
-    headers: { "Content-Type": "application/json" },
-  });
+    };
+
+    const [standby, measuring, done] = await Promise.all([
+      prisma.workOrder.findMany({
+        where: { deliveredToId: 1, statusId: 1 },
+        include,
+        orderBy: { changedAt: "desc" },
+      }),
+      prisma.workOrder.findMany({
+        where: { deliveredToId: 1, statusId: 2 },
+        include,
+        orderBy: { changedAt: "desc" },
+      }),
+      prisma.workOrder.findMany({
+        take: 18,
+        where: { deliveredToId: 1, statusId: 3 },
+        include,
+        orderBy: { changedAt: "desc" },
+      }),
+    ]);
+
+    return new Response(JSON.stringify({ standby, measuring, done }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch (error) {
+    return new Response(JSON.stringify({ error: "Error al obtener órdenes" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
 };
 
 export const PATCH: APIRoute = async ({ request }) => {
