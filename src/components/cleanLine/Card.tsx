@@ -1,4 +1,3 @@
-import type { Prisma } from "@prisma/client";
 import dayjs from "dayjs";
 import { useEffect, useMemo, useState } from "preact/hooks";
 import type { WorkOrder } from "../custTypes";
