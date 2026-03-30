@@ -91,40 +91,61 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 };
 
 export const GET: APIRoute = async ({ url }) => {
-  const deliveredTo = url.searchParams.get("deliveredTo");
+  try {
+    const deliveredTo = Number(url.searchParams.get("deliveredTo"));
 
-  const workOrders = await prisma.workOrder.findMany({
-    take: 18,
-    include: {
+    const include = {
       deliveredBy: true,
       part: true,
       status: true,
       step: true,
       partStatusRegistry: true,
       operator: {
-        include: {
-          beeper: true,
-        },
+        include: { beeper: true },
       },
-    },
-    orderBy: {
-      changedAt: "desc",
-    },
-    where: { deliveredTo: { id: Number(deliveredTo) ?? undefined } },
-  });
+    };
 
-  const mapped = workOrders.map((wo) => ({
-    ...wo,
-    changedAt: dayjs
-      .utc(wo.changedAt)
-      .tz("America/Chicago")
-      .format("YYYY-MM-DD HH:mm:ss"),
-  }));
+    const mapDates = (wo: any) => ({
+      ...wo,
+      changedAt: dayjs
+        .utc(wo.changedAt)
+        .tz("America/Chicago")
+        .format("YYYY-MM-DD HH:mm:ss"),
+    });
 
-  return new Response(JSON.stringify(mapped), {
-    status: 200,
-    headers: { "Content-Type": "application/json" },
-  });
+    const [standby, measuring, done] = await Promise.all([
+      prisma.workOrder.findMany({
+        where: { deliveredTo: { id: deliveredTo }, statusId: 1 },
+        include,
+        orderBy: { changedAt: "desc" },
+      }),
+      prisma.workOrder.findMany({
+        where: { deliveredTo: { id: deliveredTo }, statusId: 2 },
+        include,
+        orderBy: { changedAt: "desc" },
+      }),
+      prisma.workOrder.findMany({
+        take: 18,
+        where: { deliveredTo: { id: deliveredTo }, statusId: 3 },
+        include,
+        orderBy: { changedAt: "desc" },
+      }),
+    ]);
+
+    return new Response(
+      JSON.stringify({
+        standby: standby.map(mapDates),
+        measuring: measuring.map(mapDates),
+        done: done.map(mapDates),
+      }),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
+  } catch (error) {
+    return new Response(JSON.stringify({ error: "Error al obtener órdenes" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
 };
 
 export const PATCH: APIRoute = async ({ request }) => {

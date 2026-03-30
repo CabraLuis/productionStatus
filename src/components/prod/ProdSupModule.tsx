@@ -10,17 +10,24 @@ export default function ProdSupModule({ deliveredToId }: ProdSupModuleProps) {
   const [data, setData] = useState<WorkOrder[]>([]);
   const [wo, setWO] = useState<WorkOrder | null>(null);
   const rejectModalRef = useRef<HTMLDialogElement>(null);
-
+  const [standby, setStandby] = useState<WorkOrder[]>([]);
+  const [measuring, setMeasuring] = useState<WorkOrder[]>([]);
+  const [done, setDone] = useState<WorkOrder[]>([]);
   useEffect(() => {
     async function getInfo() {
       let response = await fetch(
         `/api/production?deliveredTo=${deliveredToId}`,
       );
-      let data = await response.json();
-      setData(data);
+      const data = await response.json();
+      setStandby(data.standby);
+      setMeasuring(data.measuring);
+      setDone(data.done);
     }
     getInfo();
-    const eventSource = new EventSource("/api/CleanLine/stream");
+    const eventSource =
+      deliveredToId == 1
+        ? new EventSource("/api/CMM/stream")
+        : new EventSource("/api/CleanLine/stream");
     eventSource.onmessage = (event) => {
       getInfo();
     };
@@ -42,7 +49,7 @@ export default function ProdSupModule({ deliveredToId }: ProdSupModuleProps) {
     }
   }
 
-  function showPriorityForm(workOrder: WorkOrder) {
+  function showForm(workOrder: WorkOrder) {
     setTimeout(() => {
       setWO(workOrder);
       rejectModalRef.current?.showModal();
@@ -90,36 +97,34 @@ export default function ProdSupModule({ deliveredToId }: ProdSupModuleProps) {
             </div>
           </div>
         </dialog>
-        <div class="grid grid-cols-3 ">
+        <div class="grid grid-cols-3">
           <div class="flex flex-col">
             <div class="text-5xl font-bold text-center mb-4 px-5">Standby</div>
-            {data.map((workOrder: WorkOrder) =>
-              workOrder.statusId === 1 ? (
-                <Card
-                  workOrder={workOrder}
-                  onButtonClick={showPriorityForm}
-                  buttonText="Prioridad"
-                ></Card>
-              ) : null,
-            )}
+            {standby.map((workOrder: WorkOrder) => (
+              <Card
+                workOrder={workOrder}
+                onButtonClick={showForm}
+                buttonText="Prioridad"
+              />
+            ))}
           </div>
+
           <div class="flex flex-col">
-            <div class="text-5xl font-bold text-center mb-4 px-5">Midiendo</div>
-            {data.map((workOrder: WorkOrder) =>
-              workOrder.statusId === 2 ? (
-                <Card workOrder={workOrder}></Card>
-              ) : null,
-            )}
+            <div class="text-5xl font-bold text-center mb-4 px-5">
+              {deliveredToId === 1 ? "Midiendo" : "Limpiando"}
+            </div>
+            {measuring.map((workOrder: WorkOrder) => (
+              <Card workOrder={workOrder} />
+            ))}
           </div>
+
           <div class="flex flex-col">
             <div class="text-5xl font-bold text-center mb-4 px-5">
               Terminado
             </div>
-            {data.map((workOrder: WorkOrder) =>
-              workOrder.statusId === 3 ? (
-                <Card workOrder={workOrder}></Card>
-              ) : null,
-            )}
+            {done.map((workOrder: WorkOrder) => (
+              <Card workOrder={workOrder} />
+            ))}
           </div>
         </div>
       </div>

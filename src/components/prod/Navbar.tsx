@@ -36,7 +36,7 @@ export default function Navbar() {
         </div>
       </div>
       <div class="navbar-end gap-2">
-        <a href="registry" class="btn btn-primary">
+        <a href="cmm/registry" class="btn btn-primary">
           Ver Registro
         </a>
         <button class="btn btn-secondary" onClick={back}>
