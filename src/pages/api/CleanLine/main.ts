@@ -2,13 +2,6 @@ import type { APIRoute } from "astro";
 import CleanLineController from "../../../lib/CleanLineController";
 import { prisma } from "../../../lib/prisma";
 
-function fromDateToString(date: Date) {
-  date = new Date(+date);
-  date.setTime(date.getTime() - date.getTimezoneOffset() * 60000);
-  let dateAsString = date.toISOString();
-  return dateAsString;
-}
-
 export const GET: APIRoute = async () => {
   try {
     const include = {
@@ -98,7 +91,6 @@ export const PATCH: APIRoute = async ({ request }) => {
         workOrderId: updatedWO.id,
         statusId: newStatus,
         startedAt: now,
-        rejected: updatedWO.rejected ?? false,
         elapsedTime: 0,
       },
     });

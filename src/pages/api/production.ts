@@ -5,13 +5,14 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 import CMMController from "../../lib/CMMController";
+import KittingController from "../../lib/KittingController";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
 export const POST: APIRoute = async ({ request, cookies }) => {
   const { workOrder } = await request.json();
-  if (!workOrder.part || !workOrder.quantity || !workOrder.step) {
+  if (!workOrder.part || !workOrder.quantity) {
     return new Response("Invalid data", { status: 400 });
   }
 
@@ -25,15 +26,18 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     },
   });
 
-  const newStep = await prisma.step.upsert({
-    where: {
-      step: parseInt(workOrder.step),
-    },
-    update: {},
-    create: {
-      step: parseInt(workOrder.step),
-    },
-  });
+  let newStep;
+  if (workOrder.step) {
+    newStep = await prisma.step.upsert({
+      where: {
+        step: parseInt(workOrder.step),
+      },
+      update: {},
+      create: {
+        step: parseInt(workOrder.step),
+      },
+    });
+  }
 
   const deliveredToArea = await prisma.area.findUnique({
     where: { id: Number(workOrder.deliveredTo) },
@@ -57,7 +61,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       partId: newPart.id,
       workOrder: workOrder.workOrder,
       quantity: parseInt(workOrder.quantity),
-      stepId: newStep.id,
+      stepId: newStep ? newStep.id : null,
       deliveredToId: deliveredToArea.id,
       deliveredById: Number(workOrder.deliveredBy),
       changedAt: new Date(),
@@ -87,6 +91,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   console.log("-----------------------------");
   CleanLineController.getInstance().addOrUpdate();
   CMMController.getInstance().addOrUpdate();
+  KittingController.getInstance().addOrUpdate();
   return new Response(null, { status: 201 });
 };
 
@@ -169,5 +174,6 @@ export const PATCH: APIRoute = async ({ request }) => {
 
   CleanLineController.getInstance().addOrUpdate();
   CMMController.getInstance().addOrUpdate();
+  KittingController.getInstance().addOrUpdate();
   return new Response(null, { status: 201 });
 };

@@ -2,13 +2,6 @@ import type { APIRoute } from "astro";
 import CMMController from "../../../lib/CMMController";
 import { prisma } from "../../../lib/prisma";
 
-function fromDateToString(date: Date) {
-  date = new Date(+date);
-  date.setTime(date.getTime() - date.getTimezoneOffset() * 60000);
-  let dateAsString = date.toISOString();
-  return dateAsString;
-}
-
 export const GET: APIRoute = async () => {
   try {
     const include = {

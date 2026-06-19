@@ -75,7 +75,7 @@ model WorkOrderStatusRegistry {
   workOrderId Int
   statusId    Int
   startedAt   DateTime
-  rejected    Boolean
+  rejected    Boolean?
   elapsedTime Int
 
   status Status @relation(fields: [statusId], references: [id])

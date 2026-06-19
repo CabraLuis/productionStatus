@@ -13,7 +13,6 @@ export const GET: APIRoute = async () => {
         controller.enqueue(encoder.encode(`data: UPDATED\n\n`));
       };
 
-      // ping cada 30 segundos para mantener la conexión viva
       heartbeatInterval = setInterval(() => {
         controller.enqueue(encoder.encode(`: ping\n\n`));
       }, 30000);
