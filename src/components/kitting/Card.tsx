@@ -59,7 +59,7 @@ export default function Card({
   const statusLabel =
     {
       1: "Recibido",
-      2: "Limpiando",
+      2: "Surtiendo",
       3: "Finalizado",
     }[workOrder.statusId] || "";
 
@@ -158,10 +158,6 @@ export default function Card({
             {workOrder.workOrder.split("@")[0]}
           </div>
 
-          <div class="mt-2 text-xl font-black leading-none text-black">
-            Step {workOrder.step.step}
-          </div>
-
           {deliveredInfo ? (
             <div class="mt-1 truncate text-lg font-black italic leading-tight text-info">
               {deliveredInfo}
@@ -174,11 +170,11 @@ export default function Card({
         {/* Derecha */}
         <section class="min-w-0 px-4 py-2 text-center">
           <div class="text-base font-black uppercase leading-tight text-black/70">
-            Entregó
+            Solicitó
           </div>
 
           <div class="mt-1 truncate text-[2.15rem] font-black leading-none tracking-tight text-black">
-            {workOrder.deliveredBy.name}
+            {workOrder.operator?.name}
           </div>
 
           <div class="mt-2 truncate text-base font-black leading-tight text-black">

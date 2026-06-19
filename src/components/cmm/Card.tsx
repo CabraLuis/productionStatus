@@ -54,14 +54,14 @@ export default function Card({
       1: "border-black",
       2: "border-black",
       3: "border-success",
-    }[workOrder.status.id] || "";
+    }[workOrder.statusId] || "";
 
   const statusLabel =
     {
       1: "Recibido",
       2: "Midiendo",
       3: "Finalizado",
-    }[workOrder.status.id] || "";
+    }[workOrder.statusId] || "";
 
   const formattedDate = dayjs(workOrder.changedAt).format(
     "YYYY-MM-DD HH:mm:ss",
@@ -71,101 +71,127 @@ export default function Card({
     onButtonClick?.(workOrder);
   }
 
+  const deliveredInfo =
+    workOrder.deliveredBy.name === "MAQUINADOS" && workOrder.operator?.beeperId
+      ? `Beeper ${workOrder.operator.beeper?.number}`
+      : workOrder.deliveredBy.name !== "MAQUINADOS" && workOrder.operator
+        ? `Entregó: ${workOrder.operator.name}`
+        : null;
+
+  const isFinished = workOrder.statusId === 3;
+  const hasFinalDelay =
+    isFinished && workOrder.timeDelayed && workOrder.timeDelayed > 0;
+
   return (
-    <div
-      class={`stats grid-cols-2 mb-3 mx-4 bg-base-100 ${border} border-4 relative`}
+    <article
+      class={`mx-4 mb-2 overflow-hidden rounded-xl border-4 ${border} bg-base-100 shadow-md`}
     >
-      <div class="absolute justify-self-center text-lg text-wrap w-28 text-center">
-        {workOrder.statusId === 2 && (
-          <>
-            {counter}
-            {isDelayed && (
-              <div class="font-bold text-red-500 italic right-0 top-6 left-0 text-center absolute">
-                RETARDO
-              </div>
-            )}
-          </>
-        )}
-
-        {workOrder.statusId === 3 &&
-          workOrder.timeDelayed &&
-          workOrder.timeDelayed > 0 && (
-            <div class="font-bold text-red-500 italic">
-              RETARDO DE {workOrder.timeDelayed} min.
-            </div>
-          )}
-      </div>
-
-      <div class="stat place-items-center relative ">
-        <div
-          class={`badge badge-lg absolute bottom-0 left-0 ${prioritybg}`}
-        ></div>
-        <div class="stat-title text-black text-lg font-bold">
-          {workOrder.part.number} ({workOrder.quantity} pz)
-        </div>
-        <div class="stat-value text-3xl">
-          {workOrder.workOrder.split("@")[0]}
-        </div>
-        <div class="stat-desc text-black text-xl font-bold">
-          Step {workOrder.step.step}
+      {/* Franja superior */}
+      <div class="grid min-h-10 grid-cols-[1fr_auto_1fr] items-center gap-2 border-b-2 border-base-300 bg-base-200 px-4 py-1">
+        <div class="flex items-center gap-2 overflow-hidden">
+          <span class={`badge badge-md ${prioritybg}`} />
+          <span class="truncate text-lg font-black uppercase text-black">
+            {statusLabel}
+          </span>
         </div>
 
-        {workOrder.deliveredBy.name === "MAQUINADOS" &&
-          workOrder.operator?.beeperId && (
-            <div class="text-center absolute bottom-0 right-0 left-0 font-bold text-blue-500 italic">
-              Beeper {workOrder.operator.beeper?.number}
+        <div class="text-center">
+          {workOrder.statusId === 2 && (
+            <div class="flex items-baseline justify-center gap-2">
+              <span class="text-2xl font-black leading-none tabular-nums text-black">
+                {counter}
+              </span>
+
+              {isDelayed && (
+                <span class="text-xl font-black italic leading-none text-error">
+                  RETARDO
+                </span>
+              )}
             </div>
           )}
 
-        {workOrder.deliveredBy.name !== "MAQUINADOS" && workOrder.operator && (
-          <div class="text-center absolute bottom-0 right-0 left-0 font-bold text-blue-500 italic">
-            Entregó: {workOrder.operator.name}
-          </div>
-        )}
-      </div>
+          {hasFinalDelay ? (
+            <span class="text-xl font-black italic leading-none text-error">
+              RETARDO DE {workOrder.timeDelayed} min
+            </span>
+          ) : null}
 
-      <div class="stat place-items-center relative">
-        {onButtonClick && (
-          <div class="absolute top-0 right-0 h-14">
-            <button onClick={handleClick} class="btn btn-info btn-sm">
+          {workOrder.statusId === 1 && (
+            <span class="text-lg font-black text-black">En espera</span>
+          )}
+        </div>
+
+        <div class="flex items-center justify-end gap-2">
+          {isFinished && (
+            <span
+              class={`badge badge-md font-black ${
+                workOrder.rejected ? "badge-error" : "badge-success"
+              }`}
+            >
+              {workOrder.rejected ? "✗ Rechazado" : "✓ Aceptado"}
+            </span>
+          )}
+
+          {onButtonClick && (
+            <button
+              onClick={handleClick}
+              class="btn btn-info btn-xs font-black"
+            >
               {buttonText}
             </button>
-          </div>
-        )}
-
-        <div class="stat-title text-black text-lg font-bold">Entregó</div>
-        <div class="stat-value text-3xl">{workOrder.deliveredBy.name}</div>
-
-        <div class="stat-desc text-black text-lg font-bold">
-          {statusLabel}: {formattedDate}
-          {workOrder.statusId === 2 ? (
-            <div class="text-black text-lg font-bold absolute bottom-0 text-center">
-              Estimado: {workOrder.estimatedTime} minutos
-            </div>
-          ) : null}
-          {workOrder.statusId === 3 ? (
-            <>
-              {workOrder.rejected ? (
-                <svg
-                  class="absolute top-0 right-0 h-14 fill-red-500"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 -960 960 960"
-                >
-                  <path d="m330-288 150-150 150 150 42-42-150-150 150-150-42-42-150 150-150-150-42 42 150 150-150 150 42 42ZM480-80q-82 0-155-31.5t-127.5-86Q143-252 111.5-325T80-480q0-83 31.5-156t86-127Q252-817 325-848.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 82-31.5 155T763-197.5q-54 54.5-127 86T480-80Zm0-60q142 0 241-99.5T820-480q0-142-99-241t-241-99q-141 0-240.5 99T140-480q0 141 99.5 240.5T480-140Zm0-340Z" />
-                </svg>
-              ) : (
-                <svg
-                  class="absolute top-0 right-0 h-14 fill-green-500"
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 -960 960 960"
-                >
-                  <path d="m421-298 283-283-46-45-237 237-120-120-45 45 165 166Zm59 218q-82 0-155-31.5t-127.5-86Q143-252 111.5-325T80-480q0-83 31.5-156t86-127Q252-817 325-848.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 82-31.5 155T763-197.5q-54 54.5-127 86T480-80Zm0-60q142 0 241-99.5T820-480q0-142-99-241t-241-99q-141 0-240.5 99T140-480q0 141 99.5 240.5T480-140Zm0-340Z" />
-                </svg>
-              )}
-            </>
-          ) : null}
+          )}
         </div>
       </div>
-    </div>
+
+      {/* Cuerpo principal */}
+      <div class="grid grid-cols-2">
+        {/* Izquierda */}
+        <section class="min-w-0 border-r-2 border-base-300 px-4 py-2 text-center">
+          <div class="truncate text-xl font-black leading-tight text-black">
+            {workOrder.part.number}
+            <span class="ml-2 text-base font-black text-black/70">
+              ({workOrder.quantity} pz)
+            </span>
+          </div>
+
+          <div class="mt-1 truncate text-[2.15rem] font-black leading-none tracking-tight text-black">
+            {workOrder.workOrder.split("@")[0]}
+          </div>
+
+          <div class="mt-2 text-xl font-black leading-none text-black">
+            Step {workOrder.step.step}
+          </div>
+
+          {deliveredInfo ? (
+            <div class="mt-1 truncate text-lg font-black italic leading-tight text-info">
+              {deliveredInfo}
+            </div>
+          ) : (
+            "\u00A0"
+          )}
+        </section>
+
+        {/* Derecha */}
+        <section class="min-w-0 px-4 py-2 text-center">
+          <div class="text-base font-black uppercase leading-tight text-black/70">
+            Entregó
+          </div>
+
+          <div class="mt-1 truncate text-[2.15rem] font-black leading-none tracking-tight text-black">
+            {workOrder.deliveredBy.name}
+          </div>
+
+          <div class="mt-2 truncate text-base font-black leading-tight text-black">
+            {formattedDate}
+          </div>
+
+          {workOrder.statusId === 2 && (
+            <div class="mt-1 text-lg font-black leading-tight text-black">
+              Est. {workOrder.estimatedTime} min
+            </div>
+          )}
+        </section>
+      </div>
+    </article>
   );
 }

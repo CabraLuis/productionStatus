@@ -10,7 +10,7 @@ type TechnicianWithArea = Prisma.TechnicianGetPayload<{
   };
 }>;
 
-export default function CMMModule() {
+export default function DispositionModule() {
   const [formData, setFormData] = useState({
     estimatedTime: "",
     technicianId: "",
@@ -26,7 +26,6 @@ export default function CMMModule() {
   const [isSubmittingRelease, setIsSubmittingRelease] = useState(false);
 
   const formModalRef = useRef<HTMLDialogElement>(null);
-  const rejectModalRef = useRef<HTMLDialogElement>(null);
 
   async function getInfo() {
     const response = await fetch("/api/CMM/main");
@@ -92,18 +91,6 @@ export default function CMMModule() {
     setWO(null);
   }
 
-  function showReject(workOrder: WorkOrder) {
-    setWO(workOrder);
-    rejectModalRef.current?.showModal();
-  }
-
-  function closeReject() {
-    if (isSubmittingRelease) return;
-
-    rejectModalRef.current?.close();
-    setWO(null);
-  }
-
   async function measure(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
@@ -112,7 +99,7 @@ export default function CMMModule() {
     try {
       setIsSubmittingMeasure(true);
 
-      const response = await fetch("/api/CMM/main", {
+      const response = await fetch("/api/Disposition/main", {
         method: "PATCH",
         body: JSON.stringify({
           workOrderId: wo.id,
@@ -141,141 +128,10 @@ export default function CMMModule() {
     }
   }
 
-  async function finalize(workOrder: WorkOrder, rejected: boolean) {
-    if (isSubmittingRelease) return;
-
-    try {
-      setIsSubmittingRelease(true);
-
-      const response = await fetch("/api/CMM/main", {
-        method: "PATCH",
-        body: JSON.stringify({
-          workOrderId: workOrder.id,
-          rejected,
-          statusId: 3,
-        }),
-        headers: { "Content-Type": "application/json" },
-      });
-
-      if (!response.ok) {
-        throw new Error("No se pudo liberar la pieza");
-      }
-
-      await getInfo();
-      rejectModalRef.current?.close();
-      setWO(null);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsSubmittingRelease(false);
-    }
-  }
-
-  function accept() {
-    if (!wo) return;
-    finalize(wo, false);
-  }
-
-  function reject() {
-    if (!wo) return;
-    finalize(wo, true);
-  }
-
-  const cmmTechnicians = technicians.filter((t) => t.area?.id === 1);
+  const dispositionTechnicians = technicians.filter((t) => t.area?.id === 1);
 
   return (
     <div>
-      {/* Modal Liberar */}
-      <dialog ref={rejectModalRef} class="modal">
-        <div class="modal-box max-w-xl overflow-hidden rounded-2xl border-4 border-base-300 p-0">
-          <div class="flex items-start justify-between gap-4 border-b-2 border-base-300 bg-base-200 px-6 py-4">
-            <div>
-              <h2 class="text-3xl font-black leading-none text-black">
-                Liberar pieza
-              </h2>
-
-              <p class="mt-2 text-base font-bold text-black/60">
-                Indica si la pieza fue aceptada o rechazada.
-              </p>
-            </div>
-
-            <button
-              type="button"
-              onClick={closeReject}
-              class="btn btn-circle btn-sm"
-              disabled={isSubmittingRelease}
-            >
-              ✕
-            </button>
-          </div>
-
-          <div class="grid grid-cols-2 gap-3 border-b-2 border-base-300 px-6 py-4">
-            <div class="rounded-xl bg-base-200 px-4 py-3 text-center">
-              <div class="text-sm font-black uppercase text-black/60">
-                Work Order
-              </div>
-
-              <div class="truncate text-3xl font-black leading-none text-black">
-                {wo ? wo.workOrder.split("@")[0] : "—"}
-              </div>
-            </div>
-
-            <div class="rounded-xl bg-base-200 px-4 py-3 text-center">
-              <div class="text-sm font-black uppercase text-black/60">
-                Parte
-              </div>
-
-              <div class="truncate text-2xl font-black leading-none text-black">
-                {wo ? wo.part.number : "—"}
-              </div>
-
-              <div class="mt-1 text-base font-bold text-black/70">
-                {wo ? `${wo.quantity} pz` : "\u00A0"}
-              </div>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-2 gap-4 px-6 py-5">
-            <button
-              type="button"
-              onClick={accept}
-              disabled={isSubmittingRelease}
-              class="btn btn-success h-20 text-2xl font-black"
-            >
-              Aceptar
-            </button>
-
-            <button
-              type="button"
-              onClick={reject}
-              disabled={isSubmittingRelease}
-              class="btn btn-error h-20 text-2xl font-black"
-            >
-              Rechazar
-            </button>
-          </div>
-
-          <div class="flex items-center justify-between border-t-2 border-base-300 bg-base-200 px-6 py-3">
-            <div class="text-sm font-bold text-black/60">
-              {isSubmittingRelease ? "Liberando pieza..." : "\u00A0"}
-            </div>
-
-            <button
-              type="button"
-              onClick={closeReject}
-              disabled={isSubmittingRelease}
-              class="btn btn-ghost btn-sm font-black"
-            >
-              Cancelar
-            </button>
-          </div>
-        </div>
-
-        <form method="dialog" class="modal-backdrop">
-          <button onClick={() => setWO(null)}>Cerrar</button>
-        </form>
-      </dialog>
-
       {/* Modal Medir */}
       <dialog ref={formModalRef} class="modal">
         <div class="modal-box max-w-xl overflow-hidden rounded-2xl border-4 border-base-300 p-0">
@@ -370,7 +226,7 @@ export default function CMMModule() {
                   Selecciona técnico
                 </option>
 
-                {cmmTechnicians.map((technician) => (
+                {dispositionTechnicians.map((technician) => (
                   <option value={technician.id} key={technician.id}>
                     {technician.name}
                   </option>
@@ -409,12 +265,7 @@ export default function CMMModule() {
           <div class="mb-4 px-5 text-center text-5xl font-bold">Standby</div>
 
           {standby.map((workOrder: WorkOrder) => (
-            <Card
-              key={workOrder.id}
-              workOrder={workOrder}
-              onButtonClick={showForm}
-              buttonText="Medir >"
-            />
+            <Card key={workOrder.id} workOrder={workOrder} />
           ))}
         </div>
 
@@ -422,12 +273,7 @@ export default function CMMModule() {
           <div class="mb-4 px-5 text-center text-5xl font-bold">Midiendo</div>
 
           {measuring.map((workOrder: WorkOrder) => (
-            <Card
-              key={workOrder.id}
-              workOrder={workOrder}
-              onButtonClick={showReject}
-              buttonText="Liberar >"
-            />
+            <Card key={workOrder.id} workOrder={workOrder} />
           ))}
         </div>
 
@@ -435,7 +281,12 @@ export default function CMMModule() {
           <div class="mb-4 px-5 text-center text-5xl font-bold">Terminado</div>
 
           {done.map((workOrder: WorkOrder) => (
-            <Card key={workOrder.id} workOrder={workOrder} />
+            <Card
+              key={workOrder.id}
+              workOrder={workOrder}
+              onButtonClick={showForm}
+              buttonText="Disponer"
+            />
           ))}
         </div>
       </div>

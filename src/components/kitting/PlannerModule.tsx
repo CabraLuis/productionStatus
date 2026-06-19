@@ -1,29 +1,19 @@
 import type React from "preact/compat";
 import { useEffect, useMemo, useState } from "preact/hooks";
 
-interface ProdOpsModuleProps {
-  deliveredBy?: string;
-  deliverTo?: string;
-}
-
-export default function ProdOpsModule({
-  deliveredBy,
-  deliverTo,
-}: ProdOpsModuleProps) {
+export default function PlannerModule() {
   const initialFields = () => ({
-    deliveredTo: deliverTo || "",
+    deliveredTo: "9",
     part: "",
     workOrder: "",
     quantity: "",
-    step: "",
-    deliveredBy: deliveredBy || "",
+    deliveredBy: "10",
     rejected: false,
     operatorId: "",
   });
 
   const [formData, setFormData] = useState(initialFields);
   const [parts, setParts] = useState<any[]>([]);
-  const [steps, setSteps] = useState<any[]>([]);
   const [areas, setAreas] = useState<any[]>([]);
   const [operators, setOperators] = useState<any[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -40,7 +30,6 @@ export default function ProdOpsModule({
       const data = await response.json();
 
       setParts(data.info.parts ?? []);
-      setSteps(data.info.steps ?? []);
       setAreas(data.info.areas ?? []);
       setOperators(data.info.operators ?? []);
     } catch (error) {
@@ -55,11 +44,7 @@ export default function ProdOpsModule({
 
   const availableAreas = useMemo(() => {
     return areas.filter((area: any) => {
-      if (formData.deliveredTo === "2") {
-        return area.name === "KITTING" || area.name === "DETAIL";
-      }
-
-      return area.name !== "CMM" && area.name !== "CLEAN LINE";
+      return area.name === "PLANNING";
     });
   }, [areas, formData.deliveredTo]);
 
@@ -68,16 +53,6 @@ export default function ProdOpsModule({
       (op: any) => op.areaId === Number(formData.deliveredBy),
     );
   }, [operators, formData.deliveredBy]);
-
-  function handleWOChange(e: React.TargetedEvent<HTMLInputElement, Event>) {
-    const [wo, step] = e.currentTarget.value.split("-");
-
-    setFormData((prev) => ({
-      ...prev,
-      workOrder: wo ?? "",
-      step: step ?? prev.step,
-    }));
-  }
 
   async function submit(e: React.TargetedEvent<HTMLFormElement, Event>) {
     e.preventDefault();
@@ -94,7 +69,7 @@ export default function ProdOpsModule({
         body: JSON.stringify({
           workOrder: {
             ...formData,
-            operatorId: formData.operatorId || null,
+            operatorId: formData.operatorId,
           },
         }),
       });
@@ -160,8 +135,7 @@ export default function ProdOpsModule({
                     <option value="" disabled>
                       Seleccione departamento
                     </option>
-                    <option value="1">CMM</option>
-                    <option value="2">CLEAN LINE</option>
+                    <option value="9">KITTING</option>
                   </select>
                 </div>
 
@@ -193,7 +167,7 @@ export default function ProdOpsModule({
                   </datalist>
                 </div>
 
-                <div class="grid grid-cols-2 gap-3">
+                <div class="grid grid-cols-1 gap-3">
                   <div class="form-control">
                     <label class="label py-1">
                       <span class="label-text font-bold">Work Order</span>
@@ -205,38 +179,8 @@ export default function ProdOpsModule({
                       class="input input-bordered w-full font-bold"
                       required
                       disabled={isSubmitting}
-                      onChange={handleWOChange}
                       value={formData.workOrder}
                     />
-                  </div>
-
-                  <div class="form-control">
-                    <label class="label py-1">
-                      <span class="label-text font-bold">Step</span>
-                    </label>
-
-                    <input
-                      type="number"
-                      placeholder="Step"
-                      class="input input-bordered w-full font-bold"
-                      required
-                      min="1"
-                      list="steps"
-                      disabled={isSubmitting}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          step: e.currentTarget.value,
-                        })
-                      }
-                      value={formData.step}
-                    />
-
-                    <datalist id="steps">
-                      {steps.map((step: any) => (
-                        <option key={step.step} value={step.step} />
-                      ))}
-                    </datalist>
                   </div>
                 </div>
 
@@ -302,6 +246,7 @@ export default function ProdOpsModule({
                   <select
                     class="select select-bordered w-full font-bold"
                     disabled={isSubmitting || !formData.deliveredBy}
+                    required
                     onChange={(e) =>
                       setFormData({
                         ...formData,

@@ -5,13 +5,14 @@ export default function Navbar() {
   return (
     <div class="navbar bg-base-100">
       <div class="navbar-start">
-        <a class="btn btn-ghost text-xl">Monitoreo CMM</a>
+        <a class="btn btn-ghost text-xl">Monitoreo Kitting</a>
         <img class="hidden lg:block" src="/logo.png" width={"150"} />
       </div>
       <div class="lg:navbar-center lg:flex hidden">
         <div class="badge badge-success">Prioridad Baja</div>
         <div class="badge badge-warning">Prioridad Media</div>
         <div class="badge badge-error">Prioridad Alta</div>
+        <div className="divider divider-horizontal"></div>
       </div>
       <div class="navbar-end gap-2">
         <a href="registry" class="btn btn-primary">

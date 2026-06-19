@@ -9,9 +9,9 @@ export default function Navbar() {
         <img class="hidden lg:block" src="/logo.png" width={"150"} />
       </div>
       <div class="lg:navbar-center lg:flex hidden">
-        <div class="badge badge-success">Priodidad Baja</div>
-        <div class="badge badge-warning">Priodidad Media</div>
-        <div class="badge badge-error">Priodidad Alta</div>
+        <div class="badge badge-success">Prioridad Baja</div>
+        <div class="badge badge-warning">Prioridad Media</div>
+        <div class="badge badge-error">Prioridad Alta</div>
       </div>
       <div class="navbar-end gap-2">
         <a href="registry" class="btn btn-primary">

@@ -23,7 +23,7 @@ export default function Card({
 
   useEffect(() => {
     const interval = setInterval(() => {
-      const diffSeconds = dayjs().diff(startTime, "second");
+      const diffSeconds = dayjs().diff(startTime, "seconds");
       const hours = Math.floor(diffSeconds / 3600)
         .toString()
         .padStart(2, "0");
@@ -47,7 +47,6 @@ export default function Card({
     2: "badge-warning",
     3: "badge-success",
   };
-
   const prioritybg = priorityMap[workOrder.priority] ?? "badge-transparent";
 
   const border =
@@ -55,14 +54,14 @@ export default function Card({
       1: "border-black",
       2: "border-black",
       3: "border-success",
-    }[workOrder.status.id] || "";
+    }[workOrder.statusId] || "";
 
   const statusLabel =
     {
       1: "Recibido",
-      2: "Limpiando",
+      2: "Midiendo",
       3: "Finalizado",
-    }[workOrder.status.id] || "";
+    }[workOrder.statusId] || "";
 
   const formattedDate = dayjs(workOrder.changedAt).format(
     "YYYY-MM-DD HH:mm:ss",
@@ -72,83 +71,127 @@ export default function Card({
     onButtonClick?.(workOrder);
   }
 
+  const deliveredInfo =
+    workOrder.deliveredBy.name === "MAQUINADOS" && workOrder.operator?.beeperId
+      ? `Beeper ${workOrder.operator.beeper?.number}`
+      : workOrder.deliveredBy.name !== "MAQUINADOS" && workOrder.operator
+        ? `Entregó: ${workOrder.operator.name}`
+        : null;
+
+  const isFinished = workOrder.statusId === 3;
+  const hasFinalDelay =
+    isFinished && workOrder.timeDelayed && workOrder.timeDelayed > 0;
+
   return (
-    <div
-      class={`stats grid-cols-2 mb-3 mx-4 bg-base-100 ${border} border-4 relative`}
+    <article
+      class={`mx-4 mb-2 overflow-hidden rounded-xl border-4 ${border} bg-base-100 shadow-md`}
     >
-      <div class="absolute justify-self-center text-lg text-wrap w-28 text-center">
-        {workOrder.status.id === 2 && (
-          <>
-            {counter}
-            {isDelayed && (
-              <div class="font-bold text-red-500 italic right-0 top-6 left-0 text-center absolute">
-                RETARDO
-              </div>
-            )}
-          </>
-        )}
-
-        {workOrder.status.id === 3 &&
-          workOrder.timeDelayed &&
-          workOrder.timeDelayed > 0 && (
-            <div class="font-bold text-red-500 italic">
-              RETARDO DE {workOrder.timeDelayed} min.
-            </div>
-          )}
-      </div>
-
-      <div class="stat place-items-center relative">
-        <div
-          class={`badge badge-lg absolute bottom-0 left-0 ${prioritybg}`}
-        ></div>
-
-        <div class="stat-title text-black text-lg font-bold">
-          {workOrder.part.number} ({workOrder.quantity} pz)
+      {/* Franja superior */}
+      <div class="grid min-h-10 grid-cols-[1fr_auto_1fr] items-center gap-2 border-b-2 border-base-300 bg-base-200 px-4 py-1">
+        <div class="flex items-center gap-2 overflow-hidden">
+          <span class={`badge badge-md ${prioritybg}`} />
+          <span class="truncate text-lg font-black uppercase text-black">
+            {statusLabel}
+          </span>
         </div>
 
-        <div class="stat-value text-3xl">
-          {workOrder.workOrder.split("@")[0]}
-        </div>
+        <div class="text-center">
+          {workOrder.statusId === 2 && (
+            <div class="flex items-baseline justify-center gap-2">
+              <span class="text-2xl font-black leading-none tabular-nums text-black">
+                {counter}
+              </span>
 
-        <div class="stat-desc text-black text-xl font-bold">
-          Step {workOrder.step.step}
-        </div>
-
-        {workOrder.deliveredBy.name === "MAQUINADOS" &&
-          workOrder.operator?.beeperId && (
-            <div class="text-center absolute bottom-0 right-0 left-0 font-bold text-blue-500 italic">
-              Beeper {workOrder.operator.beeper?.number}
+              {isDelayed && (
+                <span class="text-xl font-black italic leading-none text-error">
+                  RETARDO
+                </span>
+              )}
             </div>
           )}
 
-        {workOrder.deliveredBy.name !== "MAQUINADOS" && workOrder.operator && (
-          <div class="text-center absolute bottom-0 right-0 left-0 font-bold text-blue-500 italic">
-            Entregó: {workOrder.operator.name}
-          </div>
-        )}
-      </div>
+          {hasFinalDelay ? (
+            <span class="text-xl font-black italic leading-none text-error">
+              RETARDO DE {workOrder.timeDelayed} min
+            </span>
+          ) : null}
 
-      <div class="stat place-items-center relative">
-        {onButtonClick && (
-          <div class="absolute top-0 right-0 h-14">
-            <button onClick={handleClick} class="btn btn-info btn-sm">
+          {workOrder.statusId === 1 && (
+            <span class="text-lg font-black text-black">En espera</span>
+          )}
+        </div>
+
+        <div class="flex items-center justify-end gap-2">
+          {isFinished && (
+            <span
+              class={`badge badge-md font-black ${
+                workOrder.rejected ? "badge-error" : "badge-success"
+              }`}
+            >
+              {workOrder.rejected ? "✗ Rechazado" : "✓ Aceptado"}
+            </span>
+          )}
+
+          {onButtonClick && (
+            <button
+              onClick={handleClick}
+              class="btn btn-info btn-xs font-black"
+            >
               {buttonText}
             </button>
-          </div>
-        )}
-
-        <div class="stat-title text-black text-lg font-bold">Entregó</div>
-        <div class="stat-value text-3xl">{workOrder.deliveredBy.name}</div>
-
-        <div class="stat-desc text-black text-lg font-bold">
-          {statusLabel}: {formattedDate}
-          {workOrder.status.id === 2 ? (
-            <div class="text-black text-lg font-bold absolute bottom-0 text-center">
-              Estimado: {workOrder.estimatedTime} minutos
-            </div>
-          ) : null}
+          )}
         </div>
       </div>
-    </div>
+
+      {/* Cuerpo principal */}
+      <div class="grid grid-cols-2">
+        {/* Izquierda */}
+        <section class="min-w-0 border-r-2 border-base-300 px-4 py-2 text-center">
+          <div class="truncate text-xl font-black leading-tight text-black">
+            {workOrder.part.number}
+            <span class="ml-2 text-base font-black text-black/70">
+              ({workOrder.quantity} pz)
+            </span>
+          </div>
+
+          <div class="mt-1 truncate text-[2.15rem] font-black leading-none tracking-tight text-black">
+            {workOrder.workOrder.split("@")[0]}
+          </div>
+
+          <div class="mt-2 text-xl font-black leading-none text-black">
+            Step {workOrder.step.step}
+          </div>
+
+          {deliveredInfo ? (
+            <div class="mt-1 truncate text-lg font-black italic leading-tight text-info">
+              {deliveredInfo}
+            </div>
+          ) : (
+            "\u00A0"
+          )}
+        </section>
+
+        {/* Derecha */}
+        <section class="min-w-0 px-4 py-2 text-center">
+          <div class="text-base font-black uppercase leading-tight text-black/70">
+            Entregó
+          </div>
+
+          <div class="mt-1 truncate text-[2.15rem] font-black leading-none tracking-tight text-black">
+            {workOrder.deliveredBy.name}
+          </div>
+
+          <div class="mt-2 truncate text-base font-black leading-tight text-black">
+            {formattedDate}
+          </div>
+
+          {workOrder.statusId === 2 && (
+            <div class="mt-1 text-lg font-black leading-tight text-black">
+              Est. {workOrder.estimatedTime} min
+            </div>
+          )}
+        </section>
+      </div>
+    </article>
   );
 }
