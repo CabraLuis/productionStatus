@@ -122,16 +122,6 @@ export default function Card({
         </div>
 
         <div class="flex items-center justify-end gap-2">
-          {isFinished && (
-            <span
-              class={`badge badge-md font-black ${
-                workOrder.rejected ? "badge-error" : "badge-success"
-              }`}
-            >
-              {workOrder.rejected ? "✗ Rechazado" : "✓ Aceptado"}
-            </span>
-          )}
-
           {onButtonClick && (
             <button
               onClick={handleClick}
