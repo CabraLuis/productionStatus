@@ -1,6 +1,6 @@
 ---
-import KittingModule from "../../components/kitting/KittingModule";
-import Navbar from "../../components/kitting/Navbar";
+import Navbar from "../../components/prod/Navbar";
+import MatPrioModule from "../../components/kitting/MatPrioModule";
 import Layout from "../../layouts/Layout.astro";
 
 // if (!Astro.cookies.has("auth")) {
@@ -17,5 +17,5 @@ import Layout from "../../layouts/Layout.astro";
 
 <Layout title="Kitting Dashboard">
   <Navbar client:load />
-  <KittingModule client:load />
+  <MatPrioModule client:load />
 </Layout>

@@ -9,7 +9,7 @@ export default function LiveView() {
 
   useEffect(() => {
     async function getInfo() {
-      const response = await fetch("/api/production?deliveredTo=9");
+      const response = await fetch("/api/Kitting/main");
       const data = await response.json();
       setStandby(data.standby);
       setMeasuring(data.measuring);
@@ -29,19 +29,19 @@ export default function LiveView() {
         <div class="flex flex-col">
           <div class="text-5xl font-bold text-center mb-4 px-5">Standby</div>
           {standby.map((workOrder: WorkOrder) => (
-            <Card workOrder={workOrder} />
+            <Card key={workOrder.id} workOrder={workOrder} />
           ))}
         </div>
         <div class="flex flex-col">
           <div class="text-5xl font-bold text-center mb-4 px-5">Surtiendo</div>
           {measuring.map((workOrder: WorkOrder) => (
-            <Card workOrder={workOrder} />
+            <Card key={workOrder.id} workOrder={workOrder} />
           ))}
         </div>
         <div class="flex flex-col">
           <div class="text-5xl font-bold text-center mb-4 px-5">Terminado</div>
           {done.map((workOrder: WorkOrder) => (
-            <Card workOrder={workOrder} />
+            <Card key={workOrder.id} workOrder={workOrder} />
           ))}
         </div>
       </div>

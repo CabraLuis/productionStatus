@@ -12,7 +12,7 @@ model WorkOrder {
   workOrder     String
   partId        Int
   quantity      Int
-  stepId        Int
+  stepId        Int?
   deliveredToId Int
   deliveredById Int
   changedAt     DateTime
@@ -30,9 +30,9 @@ model WorkOrder {
   deliveredBy Area        @relation("DeliveredBy", fields: [deliveredById], references: [id])
   deliveredTo Area        @relation("DeliveredTo", fields: [deliveredToId], references: [id])
   part        Part        @relation(fields: [partId], references: [id])
-  step        Step        @relation(fields: [stepId], references: [id])
 
   partStatusRegistry WorkOrderStatusRegistry[]
+  step               Step?                     @relation(fields: [stepId], references: [id])
 }
 
 model Technician {

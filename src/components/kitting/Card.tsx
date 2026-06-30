@@ -60,7 +60,7 @@ export default function Card({
     {
       1: "Recibido",
       2: "Surtiendo",
-      3: "Finalizado",
+      3: "Terminado",
     }[workOrder.statusId] || "";
 
   const formattedDate = dayjs(workOrder.changedAt).format(
@@ -71,12 +71,9 @@ export default function Card({
     onButtonClick?.(workOrder);
   }
 
-  const deliveredInfo =
-    workOrder.deliveredBy.name === "MAQUINADOS" && workOrder.operator?.beeperId
-      ? `Beeper ${workOrder.operator.beeper?.number}`
-      : workOrder.deliveredBy.name !== "MAQUINADOS" && workOrder.operator
-        ? `Entregó: ${workOrder.operator.name}`
-        : null;
+  const deliveredInfo = workOrder.technician
+    ? `Técnico: ${workOrder.technician?.name}`
+    : null;
 
   const isFinished = workOrder.statusId === 3;
   const hasFinalDelay =
@@ -171,10 +168,12 @@ export default function Card({
             {formattedDate}
           </div>
 
-          {workOrder.statusId === 2 && (
+          {workOrder.statusId === 2 ? (
             <div class="mt-1 text-lg font-black leading-tight text-black">
               Est. {workOrder.estimatedTime} min
             </div>
+          ) : (
+            "\u00A0"
           )}
         </section>
       </div>

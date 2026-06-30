@@ -19,7 +19,7 @@ export default function KittingModule() {
 
   const [wo, setWO] = useState<WorkOrder | null>(null);
   const [standby, setStandby] = useState<WorkOrder[]>([]);
-  const [processing, setProcessing] = useState<WorkOrder[]>([]);
+  const [measuring, setMeasuring] = useState<WorkOrder[]>([]);
   const [done, setDone] = useState<WorkOrder[]>([]);
 
   const [isSubmittingStart, setIsSubmittingStart] = useState(false);
@@ -33,7 +33,7 @@ export default function KittingModule() {
     const data = await response.json();
 
     setStandby(data.standby);
-    setProcessing(data.processing);
+    setMeasuring(data.measuring);
     setDone(data.done);
   }
 
@@ -218,10 +218,6 @@ export default function KittingModule() {
               <div class="truncate text-2xl font-black leading-none text-black">
                 {wo ? wo.part.number : "—"}
               </div>
-
-              <div class="mt-1 text-base font-bold text-black/70">
-                {wo ? `Step ${wo.step.step}` : "\u00A0"}
-              </div>
             </div>
           </div>
 
@@ -402,7 +398,7 @@ export default function KittingModule() {
         <div class="flex flex-col">
           <div class="mb-4 px-5 text-center text-5xl font-bold">Surtiendo</div>
 
-          {processing.map((workOrder: WorkOrder) => (
+          {measuring.map((workOrder: WorkOrder) => (
             <Card
               key={workOrder.id}
               workOrder={workOrder}

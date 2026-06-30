@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "preact/hooks";
 import Card from "./Card";
 import type { WorkOrder } from "../custTypes";
 
-export default function ProdSupModule() {
+export default function MatPrioModule() {
   const [wo, setWO] = useState<WorkOrder | null>(null);
   const rejectModalRef = useRef<HTMLDialogElement>(null);
   const [standby, setStandby] = useState<WorkOrder[]>([]);
@@ -10,7 +10,7 @@ export default function ProdSupModule() {
   const [done, setDone] = useState<WorkOrder[]>([]);
   useEffect(() => {
     async function getInfo() {
-      let response = await fetch(`/api/production?deliveredTo=9`);
+      const response = await fetch("/api/Kitting/main");
       const data = await response.json();
       setStandby(data.standby);
       setMeasuring(data.measuring);

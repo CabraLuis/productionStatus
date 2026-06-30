@@ -40,7 +40,7 @@ const data = await prisma.workOrderStatusRegistry.findMany({
   orderBy: [{ workOrderId: "asc" }, { statusId: "asc" }],
   where: {
     workOrder: {
-      deliveredToId: 2,
+      deliveredToId: 9,
     },
   },
 });

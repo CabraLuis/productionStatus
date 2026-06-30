@@ -7,7 +7,7 @@ export default function PlannerModule() {
     part: "",
     workOrder: "",
     quantity: "",
-    deliveredBy: "10",
+    deliveredBy: "4",
     rejected: false,
     operatorId: "",
   });
@@ -121,7 +121,7 @@ export default function PlannerModule() {
                     autofocus
                     class="select select-bordered w-full font-bold"
                     required
-                    disabled={isSubmitting}
+                    disabled={true}
                     value={formData.deliveredTo}
                     onChange={(e) =>
                       setFormData({
@@ -178,6 +178,12 @@ export default function PlannerModule() {
                       placeholder="Ingrese WO"
                       class="input input-bordered w-full font-bold"
                       required
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          workOrder: e.currentTarget.value,
+                        })
+                      }
                       disabled={isSubmitting}
                       value={formData.workOrder}
                     />
@@ -216,7 +222,7 @@ export default function PlannerModule() {
                   <select
                     class="select select-bordered w-full font-bold"
                     required
-                    disabled={isSubmitting || !formData.deliveredTo}
+                    disabled={true}
                     onChange={(e) =>
                       setFormData({
                         ...formData,
@@ -240,7 +246,7 @@ export default function PlannerModule() {
 
                 <div class="form-control">
                   <label class="label py-1">
-                    <span class="label-text font-bold">Empleado</span>
+                    <span class="label-text font-bold">Planner</span>
                   </label>
 
                   <select
