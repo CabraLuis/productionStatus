@@ -60,7 +60,7 @@ export default function Card({
     {
       1: "Recibido",
       2: "Limpiando",
-      3: "Finalizado",
+      3: "Terminado",
     }[workOrder.statusId] || "";
 
   const formattedDate = dayjs(workOrder.changedAt).format(
@@ -149,7 +149,7 @@ export default function Card({
           </div>
 
           <div class="mt-2 text-xl font-black leading-none text-black">
-            Step {workOrder.step.step}
+            Step {workOrder.step!.step}
           </div>
 
           {deliveredInfo ? (

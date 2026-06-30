@@ -177,7 +177,7 @@ export default function DispositionModule() {
               </div>
 
               <div class="mt-1 text-base font-bold text-black/70">
-                {wo ? `Step ${wo.step.step}` : "\u00A0"}
+                {wo?.step ? `Step ${wo.step.step}` : "\u00A0"}
               </div>
             </div>
           </div>

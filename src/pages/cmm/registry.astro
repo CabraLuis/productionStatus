@@ -123,7 +123,7 @@ const data = await prisma.workOrderStatusRegistry.findMany({
                 <td>{workOrder.workOrder.part.number}</td>
                 <td>{workOrder.workOrder.workOrder.split("@").shift()}</td>
                 <td>{workOrder.workOrder.quantity} pz.</td>
-                <td>{workOrder.workOrder.step.step}</td>
+                <td>{workOrder.workOrder.step!.step}</td>
                 <td>{workOrder.workOrder.technician?.name || null}</td>
                 <td>{workOrder.workOrder.estimatedTime} min.</td>
                 <td>{workOrder.workOrder.deliveredBy.name}</td>

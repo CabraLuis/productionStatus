@@ -242,6 +242,34 @@ export default function ProdOpsModule({
 
                 <div class="form-control">
                   <label class="label py-1">
+                    <span class="label-text font-bold">Operación</span>
+                  </label>
+
+                  <input
+                    type="text"
+                    placeholder="Ingrese operación"
+                    class="input input-bordered w-full font-bold"
+                    required
+                    list="operations"
+                    disabled={isSubmitting}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        operation: e.currentTarget.value.toUpperCase(),
+                      })
+                    }
+                    value={formData.operation}
+                  />
+
+                  <datalist id="operations">
+                    {operations.map((operation: any) => (
+                      <option key={operation.id} value={operation.id} />
+                    ))}
+                  </datalist>
+                </div>
+
+                <div class="form-control">
+                  <label class="label py-1">
                     <span class="label-text font-bold">Cantidad de Piezas</span>
                   </label>
 
